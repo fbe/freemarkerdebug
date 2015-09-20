@@ -6,7 +6,7 @@
 	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>freemarkerdebug Maven Webapp</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/fbe/freemarkerdebug</url>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
