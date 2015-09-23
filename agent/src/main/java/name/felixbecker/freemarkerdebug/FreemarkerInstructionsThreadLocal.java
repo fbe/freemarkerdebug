@@ -46,7 +46,11 @@ public class FreemarkerInstructionsThreadLocal {
 	
 	// TODO count excludes?
 	private static boolean isExcludedFromTrace(TemplateElement e) {
-		return e instanceof TextBlock;
+		
+		// TODO FIXME, TextBlock not visible here because this class is loaded by the system(agent) classloader which doesn't know about the servlet class loader.
+		//return e instanceof TextBlock;
+		return e.getClass().getCanonicalName().equals("freemarker.core.TextBlock");
+		
 	}
 
 	public static void end(TemplateElement e){

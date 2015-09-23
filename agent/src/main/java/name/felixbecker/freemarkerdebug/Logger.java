@@ -6,12 +6,12 @@ public class Logger {
 	
 	public static void debug(String message){
 		if(debugEnabled){
-			System.out.println("[Snailhunter DEBUG] " + message);
+			System.out.println("[FMDebugAgent DEBUG] " + message);
 		}
 	}
 	
 	public static void info(String message){
-		System.out.println("[SnailHunter INFO] " + message);
+		System.out.println("[FMDebugAgent INFO] " + message);
 	}
 
 	
@@ -24,7 +24,7 @@ public class Logger {
 	}
 
 	public static void error(String message, Throwable e) {
-		System.err.println("[SnailHunter ERROR] " + message);
+		System.err.println("[FMDebugAgent ERROR] " + message);
 		e.printStackTrace();
 	}
 

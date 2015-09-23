@@ -1,7 +1,10 @@
 package name.felixbecker.freemarkerdebug;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,34 @@ public class FreemarkerDebugClassTransformer implements ClassFileTransformer {
 				return bytes;
 			}
 			
+		} else if("freemarker/core/Environment".equals(className)){
+			Logger.info("Replacing Environment.class with patched Environment.class");
+
+			try {
+				
+				URL resource = getClass().getResource("/freemarker/core/Environment.class");
+				Logger.info("URI of the Environment.class: " + resource.toURI());
+				
+				final InputStream classStream = getClass().getResourceAsStream("/freemarker/core/Environment.class");
+				
+				final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	
+				int nRead;
+				byte[] data = new byte[1024];
+	
+				while ((nRead = classStream.read(data, 0, data.length)) != -1) {
+				  buffer.write(data, 0, nRead);
+				}
+	
+				buffer.flush();
+
+				return buffer.toByteArray();
+			
+			} catch(Exception e){
+				Logger.error("Couldn't read bytes from patched Environment.class, returning unpatched version.", e);
+			}
+			
+			return bytes;
 		} else {
 			return bytes;
 		}
