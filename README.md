@@ -2,7 +2,14 @@
 
 Implemented freemarker / spring mvc anti patterns. Code used for traceing tool development.
 
-Sample Output:
+Just run it with maven: **mvn jetty:run**
+
+Open your browser:
+
+ - http://127.0.0.1:8080/freemarkerdebug/slow for a slow demo
+ - http://127.0.0.1:8080/freemarkerdebug/crash for a template crash demo (only useful to get a stack trace)
+
+**Sample Output of .../slow:**
 
 ```
 [1442967154684] START for freemarker.core.MixedContent(462794862) -<#import "layout.ftl" as layout>
