@@ -31,7 +31,7 @@ public class FreemarkerDispatcherServlet extends DispatcherServlet {
 			FreemarkerInstructionsThreadLocal.initialize();
 			super.render(mv, request, response);
 		} finally {
-			FreemarkerInstructionsThreadLocal.clear();
+			FreemarkerInstructionsThreadLocal.printAndClear();
 		}
 	}
 

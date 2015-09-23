@@ -20,10 +20,19 @@ public class FreemarkerInstructionsThreadLocal {
 		INSTRUCTION_STACK.set(new ArrayList<Instruction>());
 	}
 	
-	public static void clear() {
-		for(Instruction i : INSTRUCTION_STACK.get()){
-			System.out.println(i);
+	public static void printAndClear() {
+
+		final List<Instruction> instructions = INSTRUCTION_STACK.get();
+
+		if(instructions.size() > 0){
+			
+			long startMs = instructions.get(0).instructionTime;
+			
+			for(Instruction i : instructions){
+				System.out.println("["+(i.instructionTime - startMs)+"" + "ms] --- " + i);
+			}
 		}
+		
 		INSTRUCTION_STACK.remove();
 	}
 	

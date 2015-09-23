@@ -1,19 +1,3 @@
-/*
- * Copyright 2014 Attila Szegedi, Daniel Dekany, Jonathan Revusky
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package freemarker.core;
 
 import java.io.IOException;
@@ -37,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import name.felixbecker.freemarkerdebug.FreemarkerInstructionsThreadLocal;
 import freemarker.cache.TemplateNameFormat;
 import freemarker.cache._CacheAPI;
 import freemarker.ext.beans.BeansWrapper;
@@ -69,6 +52,7 @@ import freemarker.template.utility.DateUtil;
 import freemarker.template.utility.DateUtil.DateToISO8601CalendarFactory;
 import freemarker.template.utility.NullWriter;
 import freemarker.template.utility.UndeclaredThrowableException;
+import name.felixbecker.freemarkerdebug.FreemarkerInstructionsThreadLocal;
 
 /**
  * Object that represents the runtime environment during template processing.
@@ -160,7 +144,6 @@ public final class Environment extends Configurable {
     private final Namespace mainNamespace;
     private Namespace currentNamespace, globalNamespace;
     private HashMap loadedLibs;
-    private Configurable legacyParent;
 
     private boolean inAttemptBlock;
     private Throwable lastThrowable;
@@ -180,18 +163,15 @@ public final class Environment extends Configurable {
     private boolean fastInvalidReferenceExceptions;
     
     /**
-     * Retrieves the environment object associated with the current thread, or {@code null} if there's no template
-     * processing going on in this thread. Data model implementations that need access to the environment can call this
-     * method to obtain the environment object that represents the template processing that is currently running on the
-     * current thread.
+     * Retrieves the environment object associated with the current
+     * thread. Data model implementations that need access to the
+     * environment can call this method to obtain the environment object
+     * that represents the template processing that is currently running
+     * on the current thread.
      */
     public static Environment getCurrentEnvironment()
     {
-        return (Environment) threadEnv.get();
-    }
-    
-    static void setCurrentEnvironment(Environment env) {
-        threadEnv.set(env);
+        return (Environment)threadEnv.get();
     }
 
     public Environment(Template template, final TemplateHashModel rootDataModel, Writer out)
@@ -217,12 +197,6 @@ public final class Environment extends Configurable {
     public Template getTemplate() {
         return (Template)getParent();
     }
-    
-    /** Returns the same value as pre-IcI 2.3.22 getTemplate() did. */
-    Template getTemplate230() {
-        Template legacyParent = (Template) this.legacyParent;
-        return legacyParent != null ? legacyParent : getTemplate(); 
-    }
 
     /**
      * Returns the topmost {@link Template}, with other words, the one for which this {@link Environment} was created.
@@ -237,26 +211,24 @@ public final class Environment extends Configurable {
     }
     
     /**
-     * Returns the {@link Template} that we are "lexically" inside at the moment. This template will change when
-     * entering an {@code #include} or calling a macro or function in another template, or returning to yet another
-     * template with {@code #nested}. As such, it's useful in {@link TemplateDirectiveModel} to find out if from where
-     * the directive was called from.
+     * Used only internally as of yet, no backward compatibility - Returns the {@link Template} that we are "lexically"
+     * inside at moment. This template will change when entering an {@code #include} or calling a macro or function in
+     * another template, or returning to yet another template with {@code #nested}. As such, it's useful in
+     * {@link TemplateDirectiveModel} to find out if from where the directive was called.
      * 
      * @see #getMainTemplate()
      * @see #getCurrentNamespace()
-     * 
-     * @since 2.3.23
      */
-    public Template getCurrentTemplate() {
+    Template getCurrentTemplate() {
         int ln = instructionStack.size();
         return ln == 0 ? getMainTemplate() : ((TemplateObject) instructionStack.get(ln - 1)).getTemplate();
     }
 
     /**
      * Gets the currently executing <em>custom</em> directive's call place information, or {@code null} if there's no
-     * executing custom directive. This currently only works for calls made from templates with the {@code <@...>}
+     * executing custom directive. This method currently only works calls made from templates with the {@code <@...>}
      * syntax. This should only be called from the {@link TemplateDirectiveModel} that was invoked with {@code <@...>},
-     * otherwise its return value is not defined by this API (it's usually {@code null}).
+     * otherwise it's return value is not defined by this API (it's usually {@code null}).
      * 
      * @since 2.3.22
      */
@@ -335,7 +307,7 @@ public final class Environment extends Configurable {
     /**
      * Instead of pushing into the element stack, we replace the top element for the time the parameter element is
      * visited, and then we restore the top element. The main purpose of this is to get rid of elements in the error
-     * stack trace that from user perspective shouldn't have a stack frame. The typical example is
+     * stack trace that from user perspective shouldn't have a stack frame. These typical example is
      * {@code [#if foo]...[@failsHere/]...[/#if]}, where the #if call shouldn't be in the stack trace. (Simply marking
      * #if as hidden in stack traces would be wrong, because we still want to show #if when its test expression fails.)    
      */
@@ -531,12 +503,13 @@ public final class Environment extends Configurable {
             currentNamespace = invokingMacroContext.nestedContentNamespace;
             
             final Configurable prevParent;
-            final boolean parentReplacementOn = isIcI2322OrLater();
-            prevParent = getParent();
+            final boolean parentReplacementOn
+                    = isIcI2322OrLater();
             if (parentReplacementOn) {
+                prevParent = getParent();
                 setParent(currentNamespace.getTemplate());
             } else {
-                legacyParent = currentNamespace.getTemplate();
+                prevParent = null;
             }
             
             this.localContextStack = invokingMacroContext.prevLocalContextStack;
@@ -554,8 +527,6 @@ public final class Environment extends Configurable {
                 currentNamespace = getMacroNamespace(invokingMacroContext.getMacro());
                 if (parentReplacementOn) {
                     setParent(prevParent);
-                } else {
-                    legacyParent = prevParent;
                 }
                 this.localContextStack = prevLocalContextStack;
             }
@@ -565,16 +536,17 @@ public final class Environment extends Configurable {
     /**
      * "visit" an IteratorBlock
      */
-    boolean visitIteratorBlock(IteratorBlock.IterationContext ictxt)
+    void visitIteratorBlock(IteratorBlock.Context ictxt)
     throws TemplateException, IOException
     {
         pushLocalContext(ictxt);
         try {
-            return ictxt.accept(this);
+            ictxt.runLoop(this);
+        }
+        catch (BreakInstruction.Break br) {
         }
         catch (TemplateException te) {
             handleTemplateException(te);
-            return true;
         }
         finally {
             popLocalContext();
@@ -698,6 +670,17 @@ public final class Environment extends Configurable {
             final Namespace prevNamespace = currentNamespace;
             currentNamespace = (Namespace) macroToNamespaceLookup.get(macro);
             
+            final Configurable prevParent;
+            final boolean parentReplacementOn
+                    = isIcI2322OrLater();
+            if (parentReplacementOn) {
+                prevParent = getParent();
+                // This line is historically missing from here (a bug), but for BC we leave it so:
+                //setParent(currentNamespace.getTemplate());
+            } else {
+                prevParent = null;
+            }
+            
             try {
                 macroCtx.runMacro(this);
             } catch (ReturnInstruction.Return re) {
@@ -708,6 +691,9 @@ public final class Environment extends Configurable {
                 currentMacroContext = prevMacroCtx;
                 localContextStack = prevLocalContextStack;
                 currentNamespace = prevNamespace;
+                if (parentReplacementOn) {
+                    setParent(prevParent);
+                }
             }
         } finally {
             popElement();
@@ -1450,7 +1436,7 @@ public final class Environment extends Configurable {
     }
 
     /**
-     * Returns the variable that is visible in this context, or {@code null} if the variable is not found.
+     * Returns the variable that is visible in this context.
      * This is the correspondent to an FTL top-level variable reading expression.
      * That is, it tries to find the the variable in this order:
      * <ol>
@@ -1714,7 +1700,7 @@ public final class Environment extends Configurable {
     static private Macro getEnclosingMacro(TemplateElement stackEl) {
         while (stackEl != null) {
             if (stackEl instanceof Macro) return (Macro) stackEl;
-            stackEl = stackEl.getParentElement();
+            stackEl = (TemplateElement) stackEl.getParent();
         }
         return null;
     }
@@ -1863,6 +1849,11 @@ public final class Environment extends Configurable {
     }
     
     void replaceElementStackTop(TemplateElement instr) {
+    	/* === PATCHED === */
+    	Object old = instructionStack.get(instructionStack.size() - 1);
+    	FreemarkerInstructionsThreadLocal.end((TemplateElement) old);
+    	FreemarkerInstructionsThreadLocal.start((TemplateElement) instr);
+    	/* === END PATCHED === */
         instructionStack.set(instructionStack.size() - 1, instr);
     }
 
@@ -2068,11 +2059,11 @@ public final class Environment extends Configurable {
     {
         final Template prevTemplate;
         final boolean parentReplacementOn = isIcI2322OrLater();
-        prevTemplate = getTemplate();
         if (parentReplacementOn) {
+            prevTemplate = getTemplate();
             setParent(includedTemplate);
         } else {
-            legacyParent = includedTemplate;
+            prevTemplate = null;
         }
         
         importMacros(includedTemplate);
@@ -2082,8 +2073,6 @@ public final class Environment extends Configurable {
         finally {
             if (parentReplacementOn) {
                 setParent(prevTemplate);
-            } else {
-                legacyParent = prevTemplate;
             }
         }
     }

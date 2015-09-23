@@ -1,6 +1,7 @@
 package name.felixbecker.freemarkerdebug;
 
 import java.util.Date;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
@@ -14,5 +15,14 @@ public class SlowSampleService {
 			e.printStackTrace();
 		}
 		return new Date().toString();
+	}
+	
+	public boolean slowRandomBoolean() {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return new Random().nextInt() % 2 == 0;
 	}
 }
