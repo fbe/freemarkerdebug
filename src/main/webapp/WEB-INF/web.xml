@@ -6,7 +6,7 @@
   <display-name>freemarkerdebug</display-name>
   <servlet>
         <servlet-name>freemarkerdebug</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <servlet-class>org.springframework.web.servlet.FreemarkerDispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 

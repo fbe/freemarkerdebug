@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import name.felixbecker.freemarkerdebug.FreemarkerInstructionsThreadLocal;
 import freemarker.cache.TemplateNameFormat;
 import freemarker.cache._CacheAPI;
 import freemarker.ext.beans.BeansWrapper;
@@ -1848,8 +1849,7 @@ public final class Environment extends Configurable {
 
     private void pushElement(TemplateElement element) {
     	/* === PATCHED === */
-    	System.out.println("["+System.currentTimeMillis()+"] START ================= "+element.getClass().getCanonicalName()+" =================");
-    	System.out.println(element);
+    	FreemarkerInstructionsThreadLocal.start(element);
     	/* === END PATCHED === */
         instructionStack.add(element);
     }
@@ -1857,8 +1857,7 @@ public final class Environment extends Configurable {
     private void popElement() {
     	/* === PATCHED === */
     	Object element = instructionStack.get(instructionStack.size() - 1);
-    	System.out.println("["+System.currentTimeMillis()+"] END ================= "+element.getClass().getCanonicalName()+" =================");
-    	System.out.println(element);
+    	FreemarkerInstructionsThreadLocal.end((TemplateElement) element);
     	/* === END PATCHED === */
         instructionStack.remove(instructionStack.size() - 1);
     }
