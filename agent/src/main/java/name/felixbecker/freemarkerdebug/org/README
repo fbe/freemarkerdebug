@@ -1,0 +1,1 @@
+Alles in org/ ist aus dem asm-5.0.4.tar.gz (Sources tar file von ASM 5.0.4 Release) und mit name.felixbecker.freemarkerdebug prefixed. Sonst haben keine Änderungen an den Files stattgefunden. Das Prefix ist nötig, damit der Agent den Classpath nicht "verschmutzt".

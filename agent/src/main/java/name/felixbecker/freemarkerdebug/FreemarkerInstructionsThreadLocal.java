@@ -17,10 +17,12 @@ public class FreemarkerInstructionsThreadLocal {
 	private static final ThreadLocal<List<Instruction>> INSTRUCTION_STACK = new ThreadLocal<List<Instruction>>();
 	
 	public static void initialize(){
+		System.out.println("=============> Initializing Thread Local initialize!");
 		INSTRUCTION_STACK.set(new ArrayList<Instruction>());
 	}
 	
 	public static void printAndClear() {
+		System.out.println("=============> Initializing Thread Local printAndClear!");
 
 		final List<Instruction> instructions = INSTRUCTION_STACK.get();
 
