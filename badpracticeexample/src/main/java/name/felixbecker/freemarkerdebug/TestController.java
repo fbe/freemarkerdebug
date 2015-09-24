@@ -26,4 +26,9 @@ public class TestController {
 		mav.addObject("crashService", crashService);
 		return mav;
 	}
+	
+	@RequestMapping("/awesome")
+	public ModelAndView awesome(){
+		return new ModelAndView("awesome");
+	}
 }

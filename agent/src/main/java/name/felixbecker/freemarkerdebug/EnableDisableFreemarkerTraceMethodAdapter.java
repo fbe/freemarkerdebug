@@ -11,6 +11,11 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 	private final Label l1 = new Label();
 	private final String className;
 	private final String methodName;
+	
+	private static final String DISPATCHER_SERVLET_CLASSNAME = "org/springframework/web/servlet/DispatcherServlet";
+	private static final String FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME = "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal";
+	private static final String FREEMARKER_ENVIRONMENT_CLASSNAME = "freemarker/core/Environment";
+
 
 	private boolean finallyInsertionDone=false;
 	
@@ -29,26 +34,26 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 	public void onMethodEnter() {
 	
 		// Dispatcher Servlet: Enable tracing call
-		if(className.equals("org/springframework/web/servlet/DispatcherServlet") && "render".equals(methodName)){
-			mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "initialize", "()V", false);
+		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
+			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "initialize", "()V", false);
 		}
 		
 		// Freemarker Environment: enable instruction stack modification callbacks
 		
-		if(className.equals("freemarker/core/Environment")){
+		if(className.equals(FREEMARKER_ENVIRONMENT_CLASSNAME)){
 			
 			if(methodName.equals("popElement")){
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, "freemarker/core/Environment", "instructionStack", "Ljava/util/ArrayList;");
-				mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "popElement", "(Ljava/util/List;)V", false);
+				mv.visitFieldInsn(GETFIELD, FREEMARKER_ENVIRONMENT_CLASSNAME, "instructionStack", "Ljava/util/ArrayList;");
+				mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "popElement", "(Ljava/util/List;)V", false);
 			} else if(methodName.equals("pushElement")) {
 				mv.visitVarInsn(ALOAD, 1);
-				mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "pushElement", "(Ljava/lang/Object;)V", false);
+				mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "pushElement", "(Ljava/lang/Object;)V", false);
 			} else if(methodName.equals("replaceElementStackTop")){
 				mv.visitVarInsn(ALOAD, 0);
-				mv.visitFieldInsn(GETFIELD, "freemarker/core/Environment", "instructionStack", "Ljava/util/ArrayList;");
+				mv.visitFieldInsn(GETFIELD, FREEMARKER_ENVIRONMENT_CLASSNAME, "instructionStack", "Ljava/util/ArrayList;");
 				mv.visitVarInsn(ALOAD, 1);
-				mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "replaceElementStackTop", "(Ljava/util/List;Ljava/lang/Object;)V", false);
+				mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "replaceElementStackTop", "(Ljava/util/List;Ljava/lang/Object;)V", false);
 			}
 			
 		}
@@ -141,8 +146,8 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 		if (opcode==ATHROW) return; // don't instrument an ATHROW, it may still be catched in the application. It WILL be catched by the try/finally block inserted on the top level
 
 		// Disable tracing call
-		if(className.equals("org/springframework/web/servlet/DispatcherServlet") && "render".equals(methodName)){
-			mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "printAndClear", "()V", false);
+		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
+			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "printAndClear", "()V", false);
 		}
 	}
 
@@ -152,8 +157,8 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 		mv.visitLabel(l1);
 		
 		// Disable tracing call
-		if(className.equals("org/springframework/web/servlet/DispatcherServlet") && "render".equals(methodName)){
-			mv.visitMethodInsn(INVOKESTATIC, "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal", "printAndClear", "()V", false);
+		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
+			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "printAndClear", "()V", false);
 		}
 		
 		mv.visitInsn(ATHROW);

@@ -8,7 +8,7 @@ public class Start extends Instruction {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("["+instructionTime+"] START for " + e.getClass().getCanonicalName() + "("+instructionIdentityCode+")" + " -" + e);
+		final StringBuilder sb = new StringBuilder("["+instructionTime+"] START for " + templateElement.getClass().getCanonicalName() + "("+instructionIdentityCode+")" + " -" + templateElement);
 		// TODO MORE INFO
 		return sb.toString();
 	}

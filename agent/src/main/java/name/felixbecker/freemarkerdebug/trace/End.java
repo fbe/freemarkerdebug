@@ -9,7 +9,7 @@ public class End extends Instruction {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("["+instructionTime+"] END for " + e.getClass().getCanonicalName() + "("+instructionIdentityCode+")");
+		final StringBuilder sb = new StringBuilder("["+instructionTime+"] END for " + templateElement.getClass().getCanonicalName() + "("+instructionIdentityCode+")");
 		// TODO MORE INFO
 		return sb.toString();
 	}
