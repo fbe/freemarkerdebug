@@ -1835,24 +1835,21 @@ public final class Environment extends Configurable {
 
     private void pushElement(TemplateElement element) {
     	/* === PATCHED === */
-    	FreemarkerInstructionsThreadLocal.start(element);
+    	FreemarkerInstructionsThreadLocal.pushElement(element);
     	/* === END PATCHED === */
         instructionStack.add(element);
     }
 
     private void popElement() {
     	/* === PATCHED === */
-    	Object element = instructionStack.get(instructionStack.size() - 1);
-    	FreemarkerInstructionsThreadLocal.end((TemplateElement) element);
+    	FreemarkerInstructionsThreadLocal.popElement(instructionStack);
     	/* === END PATCHED === */
         instructionStack.remove(instructionStack.size() - 1);
     }
     
     void replaceElementStackTop(TemplateElement instr) {
     	/* === PATCHED === */
-    	Object old = instructionStack.get(instructionStack.size() - 1);
-    	FreemarkerInstructionsThreadLocal.end((TemplateElement) old);
-    	FreemarkerInstructionsThreadLocal.start((TemplateElement) instr);
+    	FreemarkerInstructionsThreadLocal.replaceElementStackTop(instructionStack, instr);
     	/* === END PATCHED === */
         instructionStack.set(instructionStack.size() - 1, instr);
     }

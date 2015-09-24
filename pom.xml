@@ -46,6 +46,7 @@
 	<modules>
 		<module>agent</module>
 		<module>badpracticeexample</module>
+		<module>devworkbench</module>
 	</modules>
 
 	<build>

@@ -4,17 +4,12 @@ import static name.felixbecker.freemarkerdebug.org.objectweb.asm.ClassReader.SKI
 import static name.felixbecker.freemarkerdebug.org.objectweb.asm.Opcodes.ASM5;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import name.felixbecker.freemarkerdebug.org.objectweb.asm.ClassReader;
 import name.felixbecker.freemarkerdebug.org.objectweb.asm.ClassVisitor;
 import name.felixbecker.freemarkerdebug.org.objectweb.asm.ClassWriter;
 import name.felixbecker.freemarkerdebug.org.objectweb.asm.Opcodes;
 import name.felixbecker.freemarkerdebug.org.objectweb.asm.tree.ClassNode;
-import name.felixbecker.freemarkerdebug.org.objectweb.asm.tree.MethodNode;
-import name.felixbecker.freemarkerdebug.org.objectweb.asm.util.CheckClassAdapter;
-import static name.felixbecker.freemarkerdebug.org.objectweb.asm.Opcodes.*;
 
 public class FMDebugClassModifier extends ClassVisitor {
 

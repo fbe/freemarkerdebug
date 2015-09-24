@@ -1,11 +1,9 @@
 package name.felixbecker.freemarkerdebug.trace;
 
-import freemarker.core.TemplateElement;
 
-@SuppressWarnings("deprecation")
 public class End extends Instruction {
 
-	public End(TemplateElement e) {
+	public End(Object e) {
 		super(e);
 	}
 

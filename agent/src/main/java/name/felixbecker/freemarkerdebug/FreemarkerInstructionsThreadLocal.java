@@ -6,11 +6,8 @@ import java.util.List;
 import name.felixbecker.freemarkerdebug.trace.End;
 import name.felixbecker.freemarkerdebug.trace.Instruction;
 import name.felixbecker.freemarkerdebug.trace.Start;
-import freemarker.core.TemplateElement;
-import freemarker.core.TextBlock;
 
-
-@SuppressWarnings("deprecation")
+@SuppressWarnings("rawtypes") 
 public class FreemarkerInstructionsThreadLocal {
 
 	
@@ -38,25 +35,36 @@ public class FreemarkerInstructionsThreadLocal {
 		INSTRUCTION_STACK.remove();
 	}
 	
-	public static void start(TemplateElement e){
+	public static void start(Object e){
 		if(!isExcludedFromTrace(e)){
 			INSTRUCTION_STACK.get().add(new Start(e));
 		}
 	}
 	
 	// TODO count excludes?
-	private static boolean isExcludedFromTrace(TemplateElement e) {
-		
-		// TODO FIXME, TextBlock not visible here because this class is loaded by the system(agent) classloader which doesn't know about the servlet class loader.
-		//return e instanceof TextBlock;
-		return e.getClass().getCanonicalName().equals("freemarker.core.TextBlock");
-		
+	private static boolean isExcludedFromTrace(Object e) {
+		return "freemarker.core.TextBlock".equals(e.getClass().getCanonicalName()) && false; // currently dump everything
 	}
 
-	public static void end(TemplateElement e){
+	public static void end(Object e){
 		if(!isExcludedFromTrace(e)){
 			INSTRUCTION_STACK.get().add(new End(e));
 		}
+	}
+	
+	public static void popElement(List instructionStack){
+    	Object element = instructionStack.get(instructionStack.size() - 1);
+    	FreemarkerInstructionsThreadLocal.end(element);
+	}
+
+	public static void replaceElementStackTop(List instructionStack, Object instr) {
+    	Object old = instructionStack.get(instructionStack.size() - 1);
+    	FreemarkerInstructionsThreadLocal.end(old);
+    	FreemarkerInstructionsThreadLocal.start(instr);		
+	}
+
+	public static void pushElement(Object element) {
+    	FreemarkerInstructionsThreadLocal.start(element);
 	}
 	
 	
