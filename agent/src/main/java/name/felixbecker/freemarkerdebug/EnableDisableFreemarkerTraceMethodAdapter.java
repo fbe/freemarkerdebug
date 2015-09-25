@@ -12,7 +12,7 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 	private final String className;
 	private final String methodName;
 	
-	private static final String DISPATCHER_SERVLET_CLASSNAME = "org/springframework/web/servlet/DispatcherServlet";
+	private static final String FREEMARKER_TEMPLATE_CLASSNAME = "freemarker/template/Template";
 	private static final String FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME = "name/felixbecker/freemarkerdebug/FreemarkerInstructionsThreadLocal";
 	private static final String FREEMARKER_ENVIRONMENT_CLASSNAME = "freemarker/core/Environment";
 
@@ -34,8 +34,10 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 	public void onMethodEnter() {
 	
 		// Dispatcher Servlet: Enable tracing call
-		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
-			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "initialize", "()V", false);
+		if(className.equals(FREEMARKER_TEMPLATE_CLASSNAME) && "process".equals(methodName)){
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitFieldInsn(GETFIELD, FREEMARKER_TEMPLATE_CLASSNAME, "name", "Ljava/lang/String;");
+			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "initialize", "(Ljava/lang/String;)V", false);
 		}
 		
 		// Freemarker Environment: enable instruction stack modification callbacks
@@ -146,7 +148,7 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 		if (opcode==ATHROW) return; // don't instrument an ATHROW, it may still be catched in the application. It WILL be catched by the try/finally block inserted on the top level
 
 		// Disable tracing call
-		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
+		if(className.equals(FREEMARKER_TEMPLATE_CLASSNAME) && "process".equals(methodName)){
 			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "printAndClear", "()V", false);
 		}
 	}
@@ -157,7 +159,7 @@ public class EnableDisableFreemarkerTraceMethodAdapter extends AdviceAdapter {
 		mv.visitLabel(l1);
 		
 		// Disable tracing call
-		if(className.equals(DISPATCHER_SERVLET_CLASSNAME) && "render".equals(methodName)){
+		if(className.equals(FREEMARKER_TEMPLATE_CLASSNAME) && "process".equals(methodName)){
 			mv.visitMethodInsn(INVOKESTATIC, FREEMARKER_INSTRUCTIONS_THREADLOCAL_CLASSNAME, "printAndClear", "()V", false);
 		}
 		

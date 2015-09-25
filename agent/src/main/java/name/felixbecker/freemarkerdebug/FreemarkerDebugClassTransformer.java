@@ -37,8 +37,8 @@ public class FreemarkerDebugClassTransformer implements ClassFileTransformer {
 	
 	private boolean instrumentClass(String className, ClassLoader loader){
 		
-		if("org/springframework/web/servlet/DispatcherServlet".equals(className) || "freemarker/core/Environment".equals(className)){
-			Logger.info("Found Dispatcherservlet / Freemarker Environment class, instrumenting it");
+		if("freemarker/template/Template".equals(className) || "freemarker/core/Environment".equals(className)){
+			Logger.info("Found Freemarker Template / Freemarker Environment class, instrumenting it");
 			return true;	
 		}
 		

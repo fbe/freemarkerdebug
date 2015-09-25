@@ -1,11 +1,11 @@
 package name.felixbecker.freemarkerdebug;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import name.felixbecker.freemarkerdebug.trace.End;
+import name.felixbecker.freemarkerdebug.trace.FMTraceContext;
 import name.felixbecker.freemarkerdebug.trace.Instruction;
 import name.felixbecker.freemarkerdebug.trace.Start;
 
@@ -14,15 +14,17 @@ public class FreemarkerInstructionsThreadLocal {
 
 	private static int ALERT_THRESHOLD_IN_MS = 500;
 	
-	private static final ThreadLocal<List<Instruction>> INSTRUCTION_STACK = new ThreadLocal<List<Instruction>>();
+	private static final ThreadLocal<FMTraceContext> INSTRUCTION_STACK = new ThreadLocal<FMTraceContext>();
 	
-	public static void initialize(){
-		INSTRUCTION_STACK.set(new ArrayList<Instruction>());
+	public static void initialize(String rootTemplateName){
+		INSTRUCTION_STACK.set(new FMTraceContext(rootTemplateName));
 	}
 	
 	public static void printAndClear() {
 		
-		final List<Instruction> instructions = INSTRUCTION_STACK.get();
+		final FMTraceContext context = INSTRUCTION_STACK.get();
+		
+		final List<Instruction> instructions = INSTRUCTION_STACK.get().instructionList;
 
 		if(instructions.size() > 0){
 
@@ -33,11 +35,11 @@ public class FreemarkerInstructionsThreadLocal {
 			
 			if(delta >= ALERT_THRESHOLD_IN_MS){
 				
-				Logger.info("Freemarker render phase took more than the configured " + ALERT_THRESHOLD_IN_MS + "ms. Printing call trace");
+				Logger.info("["+context.traceUniqueId+"] Freemarker render phase for template "+context.rootTemplateName+" took more than the configured " + ALERT_THRESHOLD_IN_MS + "ms. Printing call trace");
 			
 				int maxTimeLetters =(delta+ "").length();
 				for(Instruction i : instructions){
-					System.out.println(instructionToString(i, startMs, maxTimeLetters));
+					System.out.println(instructionToString(i, startMs, maxTimeLetters, context));
 				}
 				
 			}
@@ -49,7 +51,7 @@ public class FreemarkerInstructionsThreadLocal {
 	
 	public static void start(Object e){
 		if(!isExcludedFromTrace(e)){
-			INSTRUCTION_STACK.get().add(new Start(e));
+			INSTRUCTION_STACK.get().instructionList.add(new Start(e));
 		}
 	}
 	
@@ -60,7 +62,7 @@ public class FreemarkerInstructionsThreadLocal {
 
 	public static void end(Object e){
 		if(!isExcludedFromTrace(e)){
-			INSTRUCTION_STACK.get().add(new End(e));
+			INSTRUCTION_STACK.get().instructionList.add(new End(e));
 		}
 	}
 	
@@ -79,13 +81,13 @@ public class FreemarkerInstructionsThreadLocal {
     	FreemarkerInstructionsThreadLocal.start(element);
 	}
 	
-	public static String instructionToString(Instruction i, long startMs, int maxTimeLetters){
+	public static String instructionToString(Instruction i, long startMs, int maxTimeLetters, FMTraceContext context){
 		
 		final String templateElementClassName = i.templateElement.getClass().getCanonicalName();
 		final long callMs = i.instructionTime - startMs;
 		final String callMsFormatted = String.format("%0"+maxTimeLetters+"d", callMs);
 		
-		final StringBuilder sb = new StringBuilder("["+callMsFormatted + "ms] - " + String.format("%1$5s", i.getClass().getSimpleName().toUpperCase()) + " - " + templateElementClassName + " ");
+		final StringBuilder sb = new StringBuilder("["+context.traceUniqueId+"] ["+callMsFormatted + "ms] - " + String.format("%1$5s", i.getClass().getSimpleName().toUpperCase()) + " - " + templateElementClassName + " ");
 
 		
 		

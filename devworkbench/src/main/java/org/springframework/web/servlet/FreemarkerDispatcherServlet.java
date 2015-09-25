@@ -28,7 +28,7 @@ public class FreemarkerDispatcherServlet extends DispatcherServlet {
 	@Override
 	protected void render(ModelAndView mv, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
-			FreemarkerInstructionsThreadLocal.initialize();
+			FreemarkerInstructionsThreadLocal.initialize(mv.getViewName());
 			super.render(mv, request, response);
 		} finally {
 			FreemarkerInstructionsThreadLocal.printAndClear();

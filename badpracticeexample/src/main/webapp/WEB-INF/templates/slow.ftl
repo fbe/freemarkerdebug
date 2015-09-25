@@ -12,6 +12,8 @@
   	<div>Other random block here</div>
   </#if>
   
+  <#include "footer.ftl" />
+  
 </@layout.layout>
 
 
