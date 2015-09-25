@@ -87,25 +87,70 @@ public class FreemarkerInstructionsThreadLocal {
 		final long callMs = i.instructionTime - startMs;
 		final String callMsFormatted = String.format("%0"+maxTimeLetters+"d", callMs);
 		
-		final StringBuilder sb = new StringBuilder("["+context.traceUniqueId+"] ["+callMsFormatted + "ms] - " + String.format("%1$5s", i.getClass().getSimpleName().toUpperCase()) + " - " + templateElementClassName + " ");
+		final StringBuilder sb = new StringBuilder("["+context.traceUniqueId+"] ["+callMsFormatted + "ms] - " + String.format("%1$5s", i.getClass().getSimpleName().toUpperCase()) + " - " + templateElementClassName + "(" + System.identityHashCode(i.templateElement)+")");
 
 		
+		if(i instanceof Start){
 		
-		switch(templateElementClassName){
-		
+			final StringBuilder expressionContent = new StringBuilder();
+			switch(templateElementClassName){
+	
+			case "freemarker.core.BlockAssignment":
+			case "freemarker.core.BodyInstruction":
+			case "freemarker.core.BreakInstruction":
+			case "freemarker.core.Include":
+			case "freemarker.core.LibraryLoad":
+			case "freemarker.core.PropertySetting":
+			case "freemarker.core.ReturnInstruction":
+				expressionContent.append(i.templateElement);
+				break;
+			
+			case "freemarker.core.Comment":
 			case "freemarker.core.TextBlock":
+				expressionContent.append(toMax50CharsWith3DotSuffixAndWhitespaceTrim(i.templateElement));
+				break;
+				
+			case "freemarker.core.CompressedBlock": // white space compressor block
+			case "freemarker.core.IfBlock": // container for conditional block, output only for conditional block
 			case "freemarker.core.MixedContent":
-				sb.append(toMax50CharsWith3DotSuffix(i.templateElement));
+			case "freemarker.core.UnifiedCall":
+				// append no content, mostly for container elements with no side effects
+				break;
+				
+			case "freemarker.core.ConditionalBlock":
+				expressionContent.append("Condition: " + getFieldFromObject("condition", i.templateElement));
+				break;
+				
+			case "freemarker.core.DollarVariable":
+				expressionContent.append("Name: " + getFieldFromObject("expression", i.templateElement));
+				break;
+				
+			case "freemarker.core.Assignment":
+				expressionContent.append("VariableName: " + getFieldFromObject("variableName", i.templateElement));
+				break;
+				
+			case "freemarker.core.IteratorBlock":
+				expressionContent.append("ListExpression: " + getFieldFromObject("listExpression", i.templateElement) + " LoopVariableName: " + getFieldFromObject("loopVariableName", i.templateElement));
+				// TODO CHECK NETT?
 				break;
 				
 			case "freemarker.core.Macro":
-				sb.append("Name: " + getFieldFromObject("name", i.templateElement));
+				expressionContent.append("Name: " + getFieldFromObject("name", i.templateElement));
+				//  TODO check, mehr ausgeben (alle parames etc!) ??
 				break;
-		
+				
+	
 			default:
-				sb.append(": " + toMax50CharsWith3DotSuffix(i.templateElement)); 
+				expressionContent.append("UNKNOWN TEMPLATE ELEMENT - DUMPING 50 CHARS - FIXME: " + toMax50CharsWith3DotSuffixAndWhitespaceTrim(i.templateElement));
 				break;
 			}
+			
+			if(expressionContent.length() > 0){
+				expressionContent.insert(0, " - ");
+			}
+			
+			sb.append(expressionContent);
+		}
 		
 		return sb.toString();
 	}
@@ -113,11 +158,12 @@ public class FreemarkerInstructionsThreadLocal {
 	
 	private static final ConcurrentHashMap<String, Field> REFLECTION_CACHE_MAP = new ConcurrentHashMap<>();
 	
-	private static String toMax50CharsWith3DotSuffix(Object o){
-		final String stringValue = o.toString();
-		final String shortened = stringValue.length() > 50 ? stringValue.substring(0,47) + "..." : stringValue ;
+	private static String toMax50CharsWith3DotSuffixAndWhitespaceTrim(Object o){
 		
-		return shortened.replaceAll("\\n","\\\\n");
+		final String trimmed = o.toString().replaceAll("\\s+", " "); // remove double spaces / tabs, replace with one whitespace.
+		final String shortened = trimmed.length() > 50 ? trimmed.substring(0,47) + "..." : trimmed ;
+		
+		return shortened;
 	}
 	
 	private static Object getFieldFromObject(String fieldName, Object o){
