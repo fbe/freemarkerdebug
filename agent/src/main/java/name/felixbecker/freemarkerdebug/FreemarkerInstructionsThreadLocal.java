@@ -91,8 +91,15 @@ public class FreemarkerInstructionsThreadLocal {
 
 		
 		if(i instanceof Start){
-		
+
+			
+			Object template = getFieldFromObject("template", i.templateElement);
+			String templateName = getFieldFromObject("name", template).toString();
+			
+			sb.append(" - " + templateName);
+			
 			final StringBuilder expressionContent = new StringBuilder();
+			
 			switch(templateElementClassName){
 	
 			case "freemarker.core.BlockAssignment":
@@ -173,8 +180,7 @@ public class FreemarkerInstructionsThreadLocal {
 		try {
 			
 			if(!REFLECTION_CACHE_MAP.containsKey(cacheKey)){
-				final Field f = o.getClass().getDeclaredField(fieldName);
-				f.setAccessible(true);
+				final Field f = getField(fieldName, o);
 				REFLECTION_CACHE_MAP.put(cacheKey, f);
 			}
 	
@@ -185,6 +191,27 @@ public class FreemarkerInstructionsThreadLocal {
 		}
 		
 	}
-	
+
+	private static Field getField(String fieldName, Object o) throws NoSuchFieldException {
+		
+		Class objectClass = o.getClass();
+		
+		while(objectClass != null){
+			
+			try {
+				final Field f = objectClass.getDeclaredField(fieldName);
+				f.setAccessible(true);
+				return f;
+			} catch(NoSuchFieldException e) {
+				// do nothing, try super class again.
+			}
+			
+			objectClass = objectClass.getSuperclass();
+		}
+		
+		throw new NoSuchFieldException();
+		
+	}
+
 	
 }
