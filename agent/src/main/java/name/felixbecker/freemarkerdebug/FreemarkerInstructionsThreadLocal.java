@@ -96,7 +96,7 @@ public class FreemarkerInstructionsThreadLocal {
 			Object template = getFieldFromObject("template", i.templateElement);
 			String templateName = getFieldFromObject("name", template).toString();
 			
-			sb.append(" - " + templateName);
+			sb.append(" @ " + templateName);
 			
 			final StringBuilder expressionContent = new StringBuilder();
 			
