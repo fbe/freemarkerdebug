@@ -12,8 +12,6 @@ import name.felixbecker.freemarkerdebug.trace.Start;
 @SuppressWarnings("rawtypes") 
 public class FreemarkerInstructionsThreadLocal {
 
-	private static int ALERT_THRESHOLD_IN_MS = 500;
-	
 	private static final ThreadLocal<FMTraceContext> INSTRUCTION_STACK = new ThreadLocal<FMTraceContext>();
 	
 	public static void initialize(String rootTemplateName){
@@ -33,9 +31,9 @@ public class FreemarkerInstructionsThreadLocal {
 			long endMs = instructions.get(instructions.size() -1).instructionTime;
 			long delta = endMs - startMs;
 			
-			if(delta >= ALERT_THRESHOLD_IN_MS){
+			if(delta >= FMDebugConfiguration.ALERT_THRESHOLD_IN_MS){
 				
-				Logger.info("["+context.traceUniqueId+"] Freemarker render phase for template "+context.rootTemplateName+" took more than the configured " + ALERT_THRESHOLD_IN_MS + "ms. Printing call trace");
+				Logger.info("["+context.traceUniqueId+"] Freemarker render phase for template "+context.rootTemplateName+" took more than the configured " + FMDebugConfiguration.ALERT_THRESHOLD_IN_MS + "ms. Printing call trace");
 			
 				int maxTimeLetters =(delta+ "").length();
 				for(Instruction i : instructions){
