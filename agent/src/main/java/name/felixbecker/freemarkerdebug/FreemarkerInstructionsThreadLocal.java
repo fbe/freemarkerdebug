@@ -33,7 +33,7 @@ public class FreemarkerInstructionsThreadLocal {
 			
 			if(delta >= FMDebugConfiguration.ALERT_THRESHOLD_IN_MS){
 				
-				Logger.info("["+context.traceUniqueId+"] Freemarker render phase for template "+context.rootTemplateName+" took more than the configured " + FMDebugConfiguration.ALERT_THRESHOLD_IN_MS + "ms. Printing call trace");
+				Logger.info("["+context.traceUniqueId+"] Freemarker render phase for template "+context.rootTemplateName+" took more than the configured " + FMDebugConfiguration.ALERT_THRESHOLD_IN_MS + "ms (took: "+delta+"ms). Printing call trace");
 			
 				int maxTimeLetters =(delta+ "").length();
 				for(Instruction i : instructions){
@@ -87,14 +87,30 @@ public class FreemarkerInstructionsThreadLocal {
 		
 		final StringBuilder sb = new StringBuilder("["+context.traceUniqueId+"] ["+callMsFormatted + "ms] - " + String.format("%1$5s", i.getClass().getSimpleName().toUpperCase()) + " - " + templateElementClassName + "(" + System.identityHashCode(i.templateElement)+")");
 
+		/*
+		 * int beginColumn, beginLine, endColumn, endLine;
+		 */
 		
 		if(i instanceof Start){
 
 			
 			Object template = getFieldFromObject("template", i.templateElement);
-			String templateName = getFieldFromObject("name", template).toString();
+			if (template != null) {
+				String templateName = getFieldFromObject("name", template).toString();
+				
+				sb.append(" @ " + templateName);
+			} else {
+				sb.append(" @ [template not set (null)");
+			}
 			
-			sb.append(" @ " + templateName);
+			final Object beginColumn = getFieldFromObject("beginColumn", i.templateElement); 
+			final Object beginLine = getFieldFromObject("beginLine", i.templateElement);
+			sb.append(" [");	
+			sb.append(beginLine);
+			sb.append(":");
+			sb.append(beginColumn);
+			sb.append("]");
+			
 			
 			final StringBuilder expressionContent = new StringBuilder();
 			
